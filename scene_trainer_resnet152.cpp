@@ -145,22 +145,6 @@ void randomly_crop_images (
     }
 }
 
-dlib::matrix<rgb_pixel> randomly_cover_image(const dlib::matrix<dlib::rgb_pixel>& in, dlib::rand& rnd) {
-  auto in_size = std::min(in.nr(), in.nc());
-  auto cov_size = rnd.get_random_32bit_number() % (in_size / 5 + 1);
-  auto left = rnd.get_random_32bit_number() % (in.nc() - cov_size + 1);
-  auto top = rnd.get_random_32bit_number() % (in.nr() - cov_size + 1);
-  dlib::rectangle rect(left, top, left + cov_size - 1, top + cov_size - 1);
-  auto out = in;
-  auto sub = dlib::sub_image(out, rect);
-  for (long i = 0; i < dlib::num_rows(sub); ++i) {
-    std::memset(static_cast<char*>(dlib::image_data(sub)) +
-                  i * dlib::width_step(sub), 0,
-                dlib::num_columns(sub) * sizeof(dlib::rgb_pixel));
-  }
-  return out;
-}
-
 dlib::matrix<rgb_pixel> randomly_rotate_image(const dlib::matrix<dlib::rgb_pixel>& in, dlib::rand& rnd) {
   dlib::matrix<dlib::rgb_pixel> out;
   auto angle = rnd.get_double_in_range(-3.0, 3.0) * dlib::pi / 180.0;
@@ -267,7 +251,7 @@ int main(int argc, char** argv) try
         {
             temp.first = listing[rnd.get_random_32bit_number()%listing.size()];
             load_image(img, temp.first.filename);
-            randomly_crop_image(randomly_rotate_image(randomly_cover_image(img, rnd), rnd), temp.second, rnd);
+            randomly_crop_image(randomly_rotate_image(img, rnd), temp.second, rnd);
             data.enqueue(temp);
         }
     };
