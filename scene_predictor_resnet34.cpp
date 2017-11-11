@@ -172,7 +172,7 @@ int main(int argc, char** argv) try
         matrix<rgb_pixel> img;
         load_image(img, f.full_name());
 
-        std::cerr << "Prediction " << f.full_name() << " [" << ++counter << "/" << listing.size() << "]" << std::endl;
+        std::cerr << "Predicting " << f.full_name() << " [" << ++counter << "/" << listing.size() << "]" << std::endl;
 
         // Grab 16 random crops from the image.  We will run all of them through the
         // network and average the results.
