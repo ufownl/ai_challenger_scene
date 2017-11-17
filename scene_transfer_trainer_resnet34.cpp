@@ -18,6 +18,7 @@
 #include <rapidjson/filereadstream.h>
 #include <iterator>
 #include <thread>
+#include <type_traits>
 
 using namespace std;
 using namespace dlib;
@@ -201,6 +202,49 @@ std::vector<image_info> get_validation_listing()
 
 // ----------------------------------------------------------------------------------------
 
+#define DECLARE_HAS_CLASS_MEMBER(NAME) \
+  template<typename T, typename... ARGS> \
+  struct has_member_##NAME { \
+    template<typename U> constexpr static auto check(int)->decltype(std::declval<U>().NAME(std::declval<ARGS>()...), std::true_type()); \
+    template<typename U> constexpr static std::false_type check(...); \
+    static constexpr bool value = decltype(check<T>(0))::value; \
+  }; \
+  template<typename T> \
+  struct has_member_##NAME<T, void> { \
+    template<typename U> constexpr static auto check(int)->decltype(std::declval<U>().NAME(), std::true_type()); \
+    template<typename U> constexpr static std::false_type check(...); \
+    static constexpr bool value = decltype(check<T>(0))::value; \
+  }
+
+#define HAS_CLASS_MEMBER(CLASS, MEMBER, ...) \
+  has_member_##MEMBER<CLASS, __VA_ARGS__>::value
+
+DECLARE_HAS_CLASS_MEMBER(set_learning_rate_multiplier);
+DECLARE_HAS_CLASS_MEMBER(layer_details);
+
+template <class T>
+typename std::enable_if<HAS_CLASS_MEMBER(T, set_learning_rate_multiplier, double), void>::type visit(T& layer) {
+  layer.set_learning_rate_multiplier(0.0);
+  layer.set_bias_learning_rate_multiplier(0.0);
+}
+
+template <class T>
+typename std::enable_if<!HAS_CLASS_MEMBER(T, set_learning_rate_multiplier, double), void>::type visit(T& layer) {
+  // nop
+}
+
+struct layer_visitor {
+  template <class T>
+  typename std::enable_if<HAS_CLASS_MEMBER(T, layer_details, void), void>::type operator()(size_t idx, T& net) {
+    visit(net.layer_details());
+  }
+
+  template <class T>
+  typename std::enable_if<!HAS_CLASS_MEMBER(T, layer_details, void), void>::type operator()(size_t idx, T& net) {
+    // nop
+  }
+};
+
 int main(int argc, char** argv) try
 {
     size_t batch_size = 75;
@@ -226,6 +270,7 @@ int main(int argc, char** argv) try
 
     onet_type onet;
     deserialize("resnet34_1000_imagenet_classifier.dnn") >> onet;
+    visit_layers_range<11, onet_type::num_layers>(onet, layer_visitor{});
     net_type net;
     net.subnet().subnet() = onet.subnet().subnet();
 

@@ -3,7 +3,7 @@ LD				= g++
 CXXFLAGS	= -std=c++11 -Wall -O3 -mavx -ftemplate-depth=1024
 LDFLAGS		= -ldlib -lblas -llapack -pthread
 SOURCES		= $(wildcard *.cpp)
-TARGETS		= scene_trainer_resnet34 scene_predictor_resnet34 scene_trainer_resnet101 scene_predictor_resnet101 scene_trainer_resnet152 scene_predictor_resnet152 scene_transfer_trainer_resnet34 scene_transfer2_trainer_resnet34
+TARGETS		= scene_trainer_resnet34 scene_predictor_resnet34 scene_trainer_resnet101 scene_predictor_resnet101 scene_trainer_resnet152 scene_predictor_resnet152 scene_transfer_trainer_resnet34
 
 all: $(TARGETS)
 
