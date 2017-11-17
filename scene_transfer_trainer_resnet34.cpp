@@ -270,7 +270,7 @@ int main(int argc, char** argv) try
 
     onet_type onet;
     deserialize("resnet34_1000_imagenet_classifier.dnn") >> onet;
-    visit_layers_range<11, onet_type::num_layers>(onet, layer_visitor{});
+    visit_layers_range<30, onet_type::num_layers>(onet, layer_visitor{});
     net_type net;
     net.subnet().subnet() = onet.subnet().subnet();
 
