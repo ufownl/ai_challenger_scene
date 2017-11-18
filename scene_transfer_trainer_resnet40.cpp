@@ -1,6 +1,6 @@
 // The contents of this file are in the public domain. See LICENSE_FOR_EXAMPLE_PROGRAMS.txt
 /*
-    This program was used to train the resnet34.dnn network.
+    This program was used to train the resnet40.dnn network.
 
     You should be familiar with dlib's DNN module before reading this example
     program.  So read dnn_introduction_ex.cpp and dnn_introduction2_ex.cpp first.  
@@ -42,11 +42,13 @@ template <int N, typename SUBNET> using ares_down = relu<residual_down<block,N,a
 
 // ----------------------------------------------------------------------------------------
 
+template <typename SUBNET> using level0 = res<1024,res<1024,res_down<1024,SUBNET>>>;
 template <typename SUBNET> using level1 = res<512,res<512,res_down<512,SUBNET>>>;
 template <typename SUBNET> using level2 = res<256,res<256,res<256,res<256,res<256,res_down<256,SUBNET>>>>>>;
 template <typename SUBNET> using level3 = res<128,res<128,res<128,res_down<128,SUBNET>>>>;
 template <typename SUBNET> using level4 = res<64,res<64,res<64,SUBNET>>>;
 
+template <typename SUBNET> using alevel0 = ares<1024,ares<1024,ares_down<1024,SUBNET>>>;
 template <typename SUBNET> using alevel1 = ares<512,ares<512,ares_down<512,SUBNET>>>;
 template <typename SUBNET> using alevel2 = ares<256,ares<256,ares<256,ares<256,ares<256,ares_down<256,SUBNET>>>>>>;
 template <typename SUBNET> using alevel3 = ares<128,ares<128,ares<128,ares_down<128,SUBNET>>>>;
@@ -64,23 +66,25 @@ using onet_type = loss_multiclass_log<fc<1000,avg_pool_everything<
 
 // training network type
 using net_type = loss_multiclass_log<fc<80,avg_pool_everything<
+                            level0<
                             level1<
                             level2<
                             level3<
                             level4<
                             max_pool<3,3,2,2,relu<bn_con<con<64,7,7,2,2,
                             input_rgb_image_sized<227>
-                            >>>>>>>>>>>;
+                            >>>>>>>>>>>>;
 
 // testing network type (replaced batch normalization with fixed affine transforms)
 using anet_type = loss_multiclass_log<fc<80,avg_pool_everything<
+                            alevel0<
                             alevel1<
                             alevel2<
                             alevel3<
                             alevel4<
                             max_pool<3,3,2,2,relu<affine<con<64,7,7,2,2,
                             input_rgb_image_sized<227>
-                            >>>>>>>>>>>;
+                            >>>>>>>>>>>>;
 
 // ----------------------------------------------------------------------------------------
 
@@ -269,9 +273,9 @@ int main(int argc, char** argv) try
 
     onet_type onet;
     deserialize("resnet34_1000_imagenet_classifier.dnn") >> onet;
-    visit_layers_range<30, onet_type::num_layers>(onet, layer_visitor{});
+    visit_layers_range<0, onet_type::num_layers>(onet, layer_visitor{});
     net_type net;
-    net.subnet().subnet() = onet.subnet().subnet();
+    layer<30>(net) = layer<3>(onet);
 
     dnn_trainer<net_type> trainer(net,sgd(weight_decay, momentum));
     trainer.be_verbose();
@@ -345,7 +349,7 @@ int main(int argc, char** argv) try
 
     net.clean();
     cout << "saving network" << endl;
-    serialize("resnet34.dnn") << net;
+    serialize("resnet40.dnn") << net;
 
 
 

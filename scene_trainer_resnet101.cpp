@@ -1,7 +1,6 @@
 // The contents of this file are in the public domain. See LICENSE_FOR_EXAMPLE_PROGRAMS.txt
 /*
-    This program was used to train the resnet101_1000_imagenet_classifier.dnn
-    network used by the dnn_imagenet_ex.cpp example program.  
+    This program was used to train the resnet101.dnn network.
 
     You should be familiar with dlib's DNN module before reading this example
     program.  So read dnn_introduction_ex.cpp and dnn_introduction2_ex.cpp first.  
