@@ -1,0 +1,2 @@
+# ai_challenger_scene
+因为时间有限，只能利用业余时间玩玩儿，为了节省时间代码都是在[dlib](https://github.com/davisking/dlib)的例子基础上修改而来。最终成绩不出意料的被虐得相当惨：TestA集正确率90.753%，排名279；TestB集正确率86.055%，排名111。最终结果均由[scene_transfer_trainer_resnet34.cpp](https://github.com/ufownl/ai_challenger_scene/blob/master/scene_transfer_trainer_resnet34.cpp)训练模型，并通过[scene_predictor_resnet34.cpp](https://github.com/ufownl/ai_challenger_scene/blob/master/scene_predictor_resnet34.cpp)生成预测结果。
