@@ -64,7 +64,7 @@ using net_type = loss_multiclass_log<fc<365,avg_pool_everything<
                             level3<
                             level4<
                             max_pool<3,3,2,2,relu<bn_con<con<64,7,7,2,2,
-                            input_rgb_image_sized<227>
+                            input_rgb_image_sized<64>
                             >>>>>>>>>>>;
 
 // testing network type (replaced batch normalization with fixed affine transforms)
@@ -74,7 +74,7 @@ using anet_type = loss_multiclass_log<fc<365,avg_pool_everything<
                             alevel3<
                             alevel4<
                             max_pool<3,3,2,2,relu<affine<con<64,7,7,2,2,
-                            input_rgb_image_sized<227>
+                            input_rgb_image_sized<64>
                             >>>>>>>>>>>;
 
 // ----------------------------------------------------------------------------------------
@@ -105,8 +105,8 @@ void randomly_crop_image (
 {
     auto rect = make_random_cropping_rect_resnet(img, rnd);
 
-    // now crop it out as a 227x227 image.
-    extract_image_chip(img, chip_details(rect, chip_dims(227,227)), crop);
+    // now crop it out as a 64x64 image.
+    extract_image_chip(img, chip_details(rect, chip_dims(64,64)), crop);
 
     // Also randomly flip the image
     if (rnd.get_random_double() > 0.5)
@@ -127,7 +127,7 @@ void randomly_crop_images (
     for (long i = 0; i < num_crops; ++i)
     {
         auto rect = make_random_cropping_rect_resnet(img, rnd);
-        dets.push_back(chip_details(rect, chip_dims(227,227)));
+        dets.push_back(chip_details(rect, chip_dims(64,64)));
     }
 
     extract_image_chips(img, dets, crops);
@@ -188,8 +188,8 @@ std::vector<image_info> get_places365_listing(
 
 int main(int argc, char** argv) try
 {
-    size_t batch_size = 8;
-    size_t threshold = 10000;
+    size_t batch_size = 120;
+    size_t threshold = 20000;
     if (argc >= 3) {
       batch_size = atol(argv[2]);
       if (argc >= 4) {
