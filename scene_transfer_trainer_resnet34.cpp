@@ -201,45 +201,31 @@ std::vector<image_info> get_validation_listing()
 
 // ----------------------------------------------------------------------------------------
 
-#define DECLARE_HAS_CLASS_MEMBER(NAME) \
-  template<typename T, typename... ARGS> \
-  struct has_member_##NAME { \
-    template<typename U> constexpr static auto check(int)->decltype(std::declval<U>().NAME(std::declval<ARGS>()...), std::true_type()); \
-    template<typename U> constexpr static std::false_type check(...); \
-    static constexpr bool value = decltype(check<T>(0))::value; \
-  }; \
-  template<typename T> \
-  struct has_member_##NAME<T, void> { \
-    template<typename U> constexpr static auto check(int)->decltype(std::declval<U>().NAME(), std::true_type()); \
-    template<typename U> constexpr static std::false_type check(...); \
-    static constexpr bool value = decltype(check<T>(0))::value; \
-  }
-
-#define HAS_CLASS_MEMBER(CLASS, MEMBER, ...) \
-  has_member_##MEMBER<CLASS, __VA_ARGS__>::value
-
-DECLARE_HAS_CLASS_MEMBER(set_learning_rate_multiplier);
-DECLARE_HAS_CLASS_MEMBER(layer_details);
-
-template <class T>
-typename std::enable_if<HAS_CLASS_MEMBER(T, set_learning_rate_multiplier, double), void>::type visit(T& layer) {
-  layer.set_learning_rate_multiplier(0.0);
-  layer.set_bias_learning_rate_multiplier(0.0);
-}
-
-template <class T>
-typename std::enable_if<!HAS_CLASS_MEMBER(T, set_learning_rate_multiplier, double), void>::type visit(T& layer) {
-  // nop
-}
-
 struct layer_visitor {
   template <class T>
-  typename std::enable_if<HAS_CLASS_MEMBER(T, layer_details, void), void>::type operator()(size_t idx, T& net) {
-    visit(net.layer_details());
+  void operator()(size_t idx, T& net) {
+    do_call(net, 0);
+  }
+
+private:
+  template <class T>
+  auto visit(T& layer, int) -> decltype(layer.set_learning_rate_multiplier(0.0), layer.set_bias_learning_rate_multiplier(0.0), std::declval<void>()) {
+    layer.set_learning_rate_multiplier(0.0);
+    layer.set_bias_learning_rate_multiplier(0.0);
   }
 
   template <class T>
-  typename std::enable_if<!HAS_CLASS_MEMBER(T, layer_details, void), void>::type operator()(size_t idx, T& net) {
+  void visit(T& layer, ...) {
+    // nop
+  }
+
+  template <class T>
+  auto do_call(T& net, int) -> decltype(net.layer_details(), std::declval<void>()) {
+    visit(net.layer_details(), 0);
+  }
+
+  template <class T>
+  void do_call(T& net, ...) {
     // nop
   }
 };
