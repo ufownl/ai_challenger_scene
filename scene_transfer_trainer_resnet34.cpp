@@ -204,28 +204,26 @@ std::vector<image_info> get_validation_listing()
 struct layer_visitor {
   template <class T>
   void operator()(size_t idx, T& net) {
-    do_call(net, 0);
+    do_call(net);
   }
 
 private:
   template <class T>
-  auto visit(T& layer, int) -> decltype(layer.set_learning_rate_multiplier(0.0), layer.set_bias_learning_rate_multiplier(0.0), std::declval<void>()) {
+  auto visit(T& layer) -> decltype(layer.set_learning_rate_multiplier(0.0), layer.set_bias_learning_rate_multiplier(0.0), std::declval<void>()) {
     layer.set_learning_rate_multiplier(0.0);
     layer.set_bias_learning_rate_multiplier(0.0);
   }
 
-  template <class T>
-  void visit(T& layer, ...) {
+  void visit(...) {
     // nop
   }
 
   template <class T>
-  auto do_call(T& net, int) -> decltype(net.layer_details(), std::declval<void>()) {
-    visit(net.layer_details(), 0);
+  auto do_call(T& net) -> decltype(net.layer_details(), std::declval<void>()) {
+    visit(net.layer_details());
   }
 
-  template <class T>
-  void do_call(T& net, ...) {
+  void do_call(...) {
     // nop
   }
 };
